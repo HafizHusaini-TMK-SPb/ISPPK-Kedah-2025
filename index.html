@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard ISPPK Negeri Kedah</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root {
+  --navy:#1A3A6B; --blue:#2563EB; --teal:#0D9488; --gold:#F59E0B;
+  --white:#FFFFFF; --bg:#F1F5F9; --dark:#0F1B35; --mid:#64748B;
+  --light:#E2E8F0; --red:#DC2626; --green:#16A34A; --purple:#7C3AED;
+  --text:#1E293B; --card:#FFFFFF;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* ===== SIDEBAR ===== */
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:245px;background:var(--dark);display:flex;flex-direction:column;z-index:100;}
+.sidebar-logo{padding:20px 18px 14px;border-bottom:1px solid rgba(255,255,255,0.08);}
+.logo-top{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.logo-badge{width:38px;height:38px;border-radius:9px;background:var(--teal);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:white;flex-shrink:0;}
+.logo-text h2{color:white;font-size:12px;font-weight:700;letter-spacing:.5px;line-height:1.3;}
+.logo-text p{color:rgba(255,255,255,0.4);font-size:9.5px;margin-top:1px;line-height:1.4;}
+.nav-section{padding:10px 0;}
+.nav-label{padding:4px 18px 7px;color:rgba(255,255,255,0.28);font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;}
+.nav-item{display:flex;align-items:center;gap:11px;padding:9px 18px;cursor:pointer;color:rgba(255,255,255,0.52);font-size:12.5px;font-weight:500;transition:all .2s;border-left:3px solid transparent;}
+.nav-item:hover{color:white;background:rgba(255,255,255,0.05);}
+.nav-item.active{color:white;background:rgba(13,148,136,0.18);border-left-color:var(--teal);}
+.nav-icon{font-size:15px;width:18px;text-align:center;}
+.sidebar-footer{margin-top:auto;padding:14px 18px;border-top:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.28);font-size:10px;line-height:1.6;}
+
+/* ===== MAIN ===== */
+.main{margin-left:245px;min-height:100vh;display:flex;flex-direction:column;}
+.topbar{position:sticky;top:0;z-index:50;background:white;border-bottom:1px solid var(--light);padding:10px 28px;display:flex;align-items:center;gap:14px;}
+.topbar-bc{font-size:12.5px;color:var(--mid);flex:1;}
+.topbar-bc span{color:var(--navy);font-weight:600;}
+.topbar-badge{background:var(--teal);color:white;padding:3px 11px;border-radius:20px;font-size:11px;font-weight:600;}
+.content{padding:24px 28px;flex:1;}
+
+/* ===== PAGES ===== */
+.page{display:none;animation:fadeIn .25s ease;}
+.page.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ===== SECTION HEADER ===== */
+.sec-header{display:flex;align-items:center;gap:10px;margin-bottom:18px;}
+.sec-header h2{font-family:'Playfair Display',serif;font-size:20px;color:var(--navy);}
+.chip{display:inline-flex;padding:3px 11px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:.8px;background:var(--navy);color:white;}
+.chip.teal{background:var(--teal);}
+.chip.blue{background:var(--blue);}
+.chip.purple{background:var(--purple);}
+.chip.gold{background:var(--gold);color:var(--dark);}
+
+/* ===== HERO ===== */
+.hero{background:linear-gradient(135deg,var(--navy) 0%,#1E4FA8 55%,var(--teal) 100%);border-radius:14px;padding:28px 32px;margin-bottom:22px;position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;right:-30px;top:-30px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,0.04);}
+.hero::after{content:'';position:absolute;right:100px;bottom:-50px;width:140px;height:140px;border-radius:50%;background:rgba(245,158,11,.09);}
+.hero-badge{display:inline-block;background:var(--gold);color:var(--dark);padding:2px 10px;border-radius:3px;font-size:10px;font-weight:700;margin-bottom:8px;letter-spacing:1px;}
+.hero h1{font-family:'Playfair Display',serif;color:white;font-size:24px;margin-bottom:4px;}
+.hero p{color:rgba(255,255,255,0.65);font-size:12.5px;}
+
+/* ===== KPI GRID ===== */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:14px;margin-bottom:20px;}
+.kpi-card{background:white;border-radius:11px;padding:17px;position:relative;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.07),0 3px 10px rgba(0,0,0,.04);border:1px solid var(--light);transition:transform .2s,box-shadow .2s;}
+.kpi-card:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,.09);}
+.kpi-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:10px;}
+.kpi-val{font-size:23px;font-weight:700;color:var(--navy);line-height:1;margin-bottom:3px;}
+.kpi-label{font-size:11px;color:var(--mid);font-weight:500;}
+.kpi-sub{font-size:10px;color:var(--mid);margin-top:5px;padding-top:5px;border-top:1px solid var(--light);}
+.kpi-bar{position:absolute;bottom:0;left:0;right:0;height:3px;}
+
+/* ===== CHARTS GRID ===== */
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px;}
+.charts-grid.full{grid-template-columns:1fr;}
+.charts-grid.three{grid-template-columns:1fr 1fr 1fr;}
+.chart-card{background:white;border-radius:11px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.07),0 3px 10px rgba(0,0,0,.04);border:1px solid var(--light);}
+.chart-card h3{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:3px;}
+.chart-sub{font-size:11px;color:var(--mid);margin-bottom:14px;}
+.chart-card canvas{max-height:230px;}
+
+/* ===== TABLE CARD ===== */
+.table-card{background:white;border-radius:11px;box-shadow:0 1px 3px rgba(0,0,0,.07),0 3px 10px rgba(0,0,0,.04);border:1px solid var(--light);margin-bottom:20px;overflow:hidden;}
+.table-header{padding:15px 20px;border-bottom:1px solid var(--light);display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.table-header h3{font-size:13.5px;font-weight:700;color:var(--navy);flex:1;min-width:120px;}
+.search-box{display:flex;align-items:center;gap:7px;background:var(--bg);border:1px solid var(--light);border-radius:7px;padding:5px 10px;min-width:175px;}
+.search-box input{border:none;background:none;outline:none;font-size:12.5px;color:var(--text);width:100%;font-family:'DM Sans',sans-serif;}
+.search-box span{color:var(--mid);font-size:13px;}
+.filter-select{background:var(--bg);border:1px solid var(--light);border-radius:7px;padding:6px 10px;font-size:12.5px;color:var(--text);outline:none;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.btn{padding:6px 14px;border-radius:7px;border:none;cursor:pointer;font-size:11.5px;font-weight:600;transition:all .2s;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:5px;}
+.btn-teal{background:var(--teal);color:white;}.btn-teal:hover{background:#0f766e;}
+.btn-navy{background:var(--navy);color:white;}.btn-navy:hover{background:var(--blue);}
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+thead tr{background:var(--bg);}
+thead th{padding:10px 14px;text-align:left;font-size:10.5px;font-weight:700;color:var(--mid);text-transform:uppercase;letter-spacing:.7px;border-bottom:1px solid var(--light);cursor:pointer;user-select:none;white-space:nowrap;}
+thead th:hover{color:var(--navy);}
+tbody tr{border-bottom:1px solid var(--light);transition:background .12s;}
+tbody tr:hover{background:#F8FAFC;}
+tbody td{padding:10px 14px;font-size:12.5px;color:var(--text);}
+.table-footer{padding:10px 20px;border-top:1px solid var(--light);display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:var(--mid);}
+.pagination{display:flex;gap:3px;}
+.page-btn{width:28px;height:28px;border-radius:5px;border:1px solid var(--light);background:white;cursor:pointer;font-size:11.5px;color:var(--mid);display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.page-btn:hover{border-color:var(--navy);color:var(--navy);}
+.page-btn.active{background:var(--navy);color:white;border-color:var(--navy);}
+
+/* ===== BADGES ===== */
+.badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:10.5px;font-weight:600;}
+.badge-cemerlang{background:#DCFCE7;color:#166534;}
+.badge-baik{background:#DBEAFE;color:#1E40AF;}
+.badge-sederhana{background:#FEF9C3;color:#854D0E;}
+.badge-min{background:#FEE2E2;color:#991B1B;}
+.badge-kepujian{background:#EDE9FE;color:#5B21B6;}
+
+/* ===== RANK ===== */
+.rank-num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:5px;font-weight:700;font-size:11px;}
+.r1{background:#FEF3C7;color:#92400E;}.r2{background:#F1F5F9;color:#475569;}.r3{background:#FEE2E2;color:#7F1D1D;}.ro{background:var(--bg);color:var(--mid);}
+
+/* ===== SCORE BAR ===== */
+.sbar{display:flex;align-items:center;gap:7px;}
+.sbar-bg{flex:1;height:5px;background:var(--light);border-radius:3px;overflow:hidden;max-width:70px;}
+.sbar-fill{height:100%;border-radius:3px;}
+
+/* ===== CLICKABLE SCHOOL ===== */
+.school-link{color:var(--navy);cursor:pointer;text-decoration:none;font-weight:600;}
+.school-link:hover{color:var(--teal);text-decoration:underline;}
+
+/* ===== TABS ===== */
+.tab-row{display:flex;gap:3px;margin-bottom:18px;border-bottom:2px solid var(--light);}
+.tab-btn{padding:9px 18px;background:none;border:none;font-size:12.5px;font-weight:600;cursor:pointer;color:var(--mid);position:relative;bottom:-2px;border-bottom:2px solid transparent;transition:all .2s;font-family:'DM Sans',sans-serif;}
+.tab-btn.active{color:var(--navy);border-bottom-color:var(--navy);}
+.tab-btn:hover{color:var(--navy);}
+
+/* ===== INSIGHT CARDS ===== */
+.insight-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:20px;}
+.insight-card{background:white;border-radius:11px;padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.07);border:1px solid var(--light);border-left:4px solid var(--teal);}
+.insight-card.red{border-left-color:var(--red);}
+.insight-card.blue{border-left-color:var(--blue);}
+.insight-card.gold{border-left-color:var(--gold);}
+.insight-card.purple{border-left-color:var(--purple);}
+.insight-card .ii{font-size:22px;margin-bottom:7px;}
+.insight-card h4{font-size:12.5px;font-weight:700;color:var(--navy);margin-bottom:5px;}
+.insight-card p{font-size:11.5px;color:var(--mid);line-height:1.6;}
+
+/* ===== STAT COMPARE ===== */
+.stat-compare{background:white;border-radius:11px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.07);border:1px solid var(--light);margin-bottom:20px;}
+.stat-compare h3{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:14px;}
+.srow{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.srow-label{width:155px;font-size:11.5px;color:var(--mid);flex-shrink:0;}
+.srow-bar-wrap{flex:1;}
+.srow-bar-bg{height:9px;background:var(--light);border-radius:4px;overflow:hidden;}
+.srow-bar-fill{height:100%;border-radius:4px;}
+.srow-val{width:52px;text-align:right;font-size:12px;font-weight:700;color:var(--navy);}
+
+/* ===== CORR BOX ===== */
+.corr-box{background:linear-gradient(135deg,var(--navy),#1e4fa8);border-radius:11px;padding:22px;color:white;text-align:center;}
+.corr-box .cv{font-family:'Playfair Display',serif;font-size:50px;color:var(--gold);line-height:1;}
+.corr-box .cl{font-size:12px;opacity:.7;margin-top:3px;}
+.corr-box .cd{font-size:11px;opacity:.5;margin-top:6px;}
+
+/* ===== MODAL ===== */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:999;display:none;align-items:flex-start;justify-content:center;padding:30px 16px;overflow-y:auto;}
+.modal-overlay.open{display:flex;}
+.modal{background:white;border-radius:14px;width:100%;max-width:780px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.25);}
+.modal-head{padding:18px 24px;border-bottom:1px solid var(--light);display:flex;align-items:flex-start;gap:12px;}
+.modal-head-info{flex:1;}
+.modal-head-info h2{font-size:16px;font-weight:700;color:var(--navy);margin-bottom:3px;}
+.modal-head-info .mh-sub{font-size:12px;color:var(--mid);}
+.modal-close{width:32px;height:32px;border-radius:7px;border:1px solid var(--light);background:white;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--mid);flex-shrink:0;}
+.modal-close:hover{background:var(--bg);}
+.modal-body{flex:1;overflow-y:auto;padding:20px 24px;}
+.modal-tabs{display:flex;gap:0;margin-bottom:16px;background:var(--bg);border-radius:8px;padding:3px;}
+.modal-tab{flex:1;padding:7px;text-align:center;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;color:var(--mid);border:none;background:none;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.modal-tab.active{background:white;color:var(--navy);box-shadow:0 1px 3px rgba(0,0,0,.1);}
+
+/* Modal info grid */
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.info-item{background:var(--bg);border-radius:8px;padding:10px 12px;}
+.info-item .ii-label{font-size:10px;color:var(--mid);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}
+.info-item .ii-val{font-size:13px;color:var(--text);font-weight:500;}
+.info-item.full{grid-column:1/-1;}
+.info-item.highlight{background:linear-gradient(135deg,var(--teal),#0f766e);color:white;}
+.info-item.highlight .ii-label{color:rgba(255,255,255,.7);}
+.info-item.highlight .ii-val{color:white;font-size:22px;font-weight:700;}
+
+/* Modal table */
+.modal-table-wrap{overflow-x:auto;margin-bottom:12px;}
+.modal-table{width:100%;border-collapse:collapse;font-size:12px;}
+.modal-table thead th{padding:8px 10px;background:var(--bg);font-size:10px;font-weight:700;color:var(--mid);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--light);}
+.modal-table tbody td{padding:8px 10px;border-bottom:1px solid var(--light);}
+.modal-table tbody tr:hover{background:#f8fafc;}
+
+/* Doc button */
+.doc-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:var(--blue);color:white;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;transition:background .2s;margin-top:4px;}
+.doc-btn:hover{background:var(--navy);}
+.doc-btn-teal{background:var(--teal);}.doc-btn-teal:hover{background:#0f766e;}
+
+/* ===== DASHBOARD DOMAIN SECTIONS ===== */
+.domain-section{margin-bottom:28px;}
+.domain-divider{display:flex;align-items:center;gap:12px;margin-bottom:18px;}
+.domain-divider-line{flex:1;height:1px;background:var(--light);}
+.domain-divider-label{display:flex;align-items:center;gap:8px;padding:6px 14px;background:white;border:1px solid var(--light);border-radius:20px;font-size:11px;font-weight:700;color:var(--navy);box-shadow:0 1px 3px rgba(0,0,0,.05);}
+
+/* ===== LOADING ===== */
+.loading{display:flex;align-items:center;justify-content:center;min-height:200px;flex-direction:column;gap:10px;color:var(--mid);}
+.spinner{width:32px;height:32px;border:3px solid var(--light);border-top-color:var(--teal);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media(max-width:900px){
+  .sidebar{width:54px;}
+  .logo-text,.nav-item span,.nav-label,.sidebar-footer p,.sidebar-footer span{display:none;}
+  .logo-top{justify-content:center;}
+  .nav-item{justify-content:center;padding:10px;}
+  .main{margin-left:54px;}
+  .charts-grid,.charts-grid.three{grid-template-columns:1fr;}
+  .content{padding:14px;}
+  .info-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-top">
+      <div class="logo-badge">JPN</div>
+      <div class="logo-text">
+        <h2>Dashboard ISPPK<br>Negeri Kedah</h2>
+        <p>Sektor Pembelajaran<br>JPN Kedah</p>
+      </div>
+    </div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Menu Utama</div>
+    <div class="nav-item active" onclick="showPage('dashboard',this)"><span class="nav-icon">📊</span><span>Dashboard</span></div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Domain Analisis</div>
+    <div class="nav-item" onclick="showPage('pk',this)"><span class="nav-icon">🏫</span><span>Pengurusan &amp; Kepimpinan</span></div>
+    <div class="nav-item" onclick="showPage('pdp',this)"><span class="nav-icon">👨‍🏫</span><span>PdP Guru &amp; Murid</span></div>
+    <div class="nav-item" onclick="showPage('koko',this)"><span class="nav-icon">⚽</span><span>Kokurikulum</span></div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Alatan</div>
+    <div class="nav-item" onclick="showPage('insight',this)"><span class="nav-icon">💡</span><span>AI Insight</span></div>
+    <div class="nav-item" onclick="exportAllExcel()"><span class="nav-icon">📥</span><span>Eksport Excel</span></div>
+  </div>
+  <div class="sidebar-footer"><span>JPN Kedah © 2025</span><br><span>Data ISPPK Kedah 2025</span></div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-bc">Dashboard ISPPK &rsaquo; <span id="bc">Dashboard</span></div>
+    <span class="topbar-badge">ISPPK Kedah 2025</span>
+  </div>
+  <div class="content">
+
+<!-- Loading Screen -->
+<div id="loading-screen" style="position:fixed;inset:0;background:#0F1B35;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;font-family:'DM Sans',sans-serif;">
+  <div style="text-align:center;">
+    <div style="font-family:'Playfair Display',serif;font-size:40px;color:#F59E0B;font-weight:900;letter-spacing:2px;">ISPPK</div>
+    <div style="font-size:14px;color:white;font-weight:600;margin-top:2px;">Negeri Kedah 2025</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;letter-spacing:1.5px;text-transform:uppercase;">Sektor Pembelajaran, JPN Kedah</div>
+  </div>
+  <div style="width:220px;height:4px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;">
+    <div id="load-bar" style="height:100%;background:#0D9488;border-radius:2px;width:0;transition:width 0.2s ease;"></div>
+  </div>
+  <div id="load-msg" style="font-size:12px;color:rgba(255,255,255,0.45);">Memuatkan data...</div>
+</div>
+
+<!-- ============ DASHBOARD PAGE ============ -->
+<div class="page active" id="page-dashboard">
+  <div class="hero">
+    <div class="hero-badge">ISPPK 2025</div>
+    <h1>Dashboard ISPPK Negeri Kedah</h1>
+    <p>Sektor Pembelajaran, Jabatan Pendidikan Negeri Kedah</p>
+  </div>
+
+  <!-- KPI overview -->
+  <div class="kpi-grid" id="kpi-main"></div>
+
+  <!-- Domain 1 summary -->
+  <div class="domain-section">
+    <div class="domain-divider">
+      <div class="domain-divider-line"></div>
+      <div class="domain-divider-label"><span>🏫</span> Pengurusan &amp; Kepimpinan</div>
+      <div class="domain-divider-line"></div>
+    </div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <h3>Taburan Tahap Pencapaian</h3>
+        <div class="chart-sub">Bilangan sekolah mengikut tahap</div>
+        <canvas id="d-pk-tahap"></canvas>
+      </div>
+      <div class="chart-card">
+        <h3>Prestasi Mengikut PPD</h3>
+        <div class="chart-sub">Purata skor PK semua PPD</div>
+        <canvas id="d-pk-ppd"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Domain 2 summary -->
+  <div class="domain-section">
+    <div class="domain-divider">
+      <div class="domain-divider-line"></div>
+      <div class="domain-divider-label"><span>👨‍🏫</span> PdP Guru &amp; Murid</div>
+      <div class="domain-divider-line"></div>
+    </div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <h3>Taburan Tahap Guru vs Murid</h3>
+        <div class="chart-sub">% mengikut tahap pencapaian</div>
+        <canvas id="d-pdp-compare"></canvas>
+      </div>
+      <div class="chart-card">
+        <h3>Prestasi PdP Mengikut PPD</h3>
+        <div class="chart-sub">Guru vs Murid — purata skor</div>
+        <canvas id="d-pdp-ppd"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Domain 3 summary -->
+  <div class="domain-section">
+    <div class="domain-divider">
+      <div class="domain-divider-line"></div>
+      <div class="domain-divider-label"><span>⚽</span> Kokurikulum</div>
+      <div class="domain-divider-line"></div>
+    </div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <h3>Taburan Tahap Kokurikulum</h3>
+        <div class="chart-sub">Bilangan rekod mengikut tahap</div>
+        <canvas id="d-koko-tahap"></canvas>
+      </div>
+      <div class="chart-card">
+        <h3>Prestasi Kokurikulum Mengikut PPD</h3>
+        <div class="chart-sub">Purata skor koko semua PPD</div>
+        <canvas id="d-koko-ppd"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PK PAGE ============ -->
+<div class="page" id="page-pk">
+  <div class="sec-header"><span class="chip teal">DOMAIN 1</span><h2>Pengurusan &amp; Kepimpinan</h2></div>
+  <div class="kpi-grid" id="kpi-pk"></div>
+  <div class="charts-grid">
+    <div class="chart-card">
+      <h3>Taburan Tahap Pencapaian</h3>
+      <div class="chart-sub">Bilangan sekolah mengikut tahap</div>
+      <canvas id="pk-tahap" style="max-height:200px;"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Prestasi Mengikut PPD</h3>
+      <div class="chart-sub">Purata skor 10 PPD</div>
+      <canvas id="pk-ppd"></canvas>
+    </div>
+  </div>
+  <!-- Ranking table -->
+  <div class="table-card">
+    <div class="table-header">
+      <h3>🏫 Ranking Sekolah — Pengurusan &amp; Kepimpinan</h3>
+      <div class="search-box"><span>🔍</span><input type="text" id="pk-search" placeholder="Cari nama sekolah..." oninput="filterTbl('pk')"></div>
+      <select class="filter-select" id="pk-ppd-f" onchange="filterTbl('pk')"><option value="">Semua PPD</option></select>
+      <select class="filter-select" id="pk-tahap-f" onchange="filterTbl('pk')">
+        <option value="">Semua Tahap</option>
+        <option>Tahap Cemerlang</option><option>Tahap Baik</option><option>Tahap Sederhana</option><option>Tahap minimum</option>
+      </select>
+      <button class="btn btn-teal" onclick="exportTbl('pk')">📥 Eksport</button>
+    </div>
+    <div class="table-wrap">
+      <table><thead><tr>
+        <th onclick="sortTbl('pk','rank')">No</th>
+        <th onclick="sortTbl('pk','sekolah')">Nama Sekolah</th>
+        <th onclick="sortTbl('pk','ppd')">PPD</th>
+        <th onclick="sortTbl('pk','skor')">Skor (%)</th>
+        <th onclick="sortTbl('pk','tahap')">Tahap</th>
+      </tr></thead>
+      <tbody id="tb-pk"></tbody></table>
+    </div>
+    <div class="table-footer"><span id="pk-cnt"></span><div class="pagination" id="pk-pag"></div></div>
+  </div>
+</div>
+
+<!-- ============ PdP PAGE ============ -->
+<div class="page" id="page-pdp">
+  <div class="sec-header"><span class="chip blue">DOMAIN 2</span><h2>PdP Guru &amp; Murid</h2></div>
+  <div class="kpi-grid" id="kpi-pdp"></div>
+
+  <div class="tab-row">
+    <button class="tab-btn active" onclick="showTab('pdp','murid',this)">Prestasi Murid</button>
+    <button class="tab-btn" onclick="showTab('pdp','ppd',this)">Analisis PPD</button>
+  </div>
+
+  <!-- TAB: Prestasi Murid -->
+  <div id="pdp-tab-murid">
+    <div class="charts-grid full">
+      <div class="chart-card">
+        <h3>Top 15 Sekolah — Murid</h3>
+        <div class="chart-sub">Purata peratus pencapaian murid tertinggi</div>
+        <canvas id="pdp-top-murid"></canvas>
+      </div>
+    </div>
+    <div class="table-card">
+      <div class="table-header">
+        <h3>📊 Ranking Sekolah — Peratus Pencapaian Murid</h3>
+        <div class="search-box"><span>🔍</span><input type="text" id="pdp-search" placeholder="Cari sekolah..." oninput="filterTbl('pdp')"></div>
+        <select class="filter-select" id="pdp-ppd-f" onchange="filterTbl('pdp')"><option value="">Semua PPD</option></select>
+        <button class="btn btn-teal" onclick="exportTbl('pdp')">📥 Eksport</button>
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr>
+          <th onclick="sortTbl('pdp','rank')">No</th>
+          <th onclick="sortTbl('pdp','sekolah')">Nama Sekolah</th>
+          <th onclick="sortTbl('pdp','ppd')">PPD</th>
+          <th onclick="sortTbl('pdp','skor_murid')">Skor Murid (%)</th>
+          <th onclick="sortTbl('pdp','skor_guru')">Skor Guru (%)</th>
+          <th onclick="sortTbl('pdp','bilangan')">Bil. Cerapan</th>
+        </tr></thead>
+        <tbody id="tb-pdp"></tbody></table>
+      </div>
+      <div class="table-footer"><span id="pdp-cnt"></span><div class="pagination" id="pdp-pag"></div></div>
+    </div>
+  </div>
+
+  <!-- TAB: Analisis PPD -->
+  <div id="pdp-tab-ppd" style="display:none;">
+    <div class="charts-grid">
+      <div class="chart-card">
+        <h3>Purata Skor PdP Guru Mengikut PPD</h3>
+        <div class="chart-sub">Perbandingan semua PPD</div>
+        <canvas id="pdp-ppd-guru"></canvas>
+      </div>
+      <div class="chart-card">
+        <h3>Perbandingan Purata Skor PdP Murid Mengikut PPD</h3>
+        <div class="chart-sub">Purata skor murid semua PPD</div>
+        <canvas id="pdp-ppd-murid"></canvas>
+      </div>
+    </div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <h3>Guru vs Murid — Taburan Tahap</h3>
+        <div class="chart-sub">% mengikut tahap pencapaian (Guru vs Murid)</div>
+        <canvas id="pdp-guru-murid"></canvas>
+      </div>
+      <div class="chart-card" id="pdp-ppd-statcard">
+        <h3>Perbandingan Skor Murid Mengikut PPD</h3>
+        <div class="chart-sub">Bar perbandingan purata skor murid</div>
+        <div id="pdp-ppd-stat"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ KOKO PAGE ============ -->
+<div class="page" id="page-koko">
+  <div class="sec-header"><span class="chip purple">DOMAIN 3</span><h2>Kokurikulum</h2></div>
+  <div class="kpi-grid" id="kpi-koko"></div>
+  <div class="charts-grid">
+    <div class="chart-card">
+      <h3>Taburan Tahap Pencapaian Kokurikulum</h3>
+      <div class="chart-sub">% daripada semua rekod</div>
+      <canvas id="koko-tahap"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Prestasi Kokurikulum Mengikut PPD</h3>
+      <div class="chart-sub">Purata skor koko semua PPD</div>
+      <canvas id="koko-ppd"></canvas>
+    </div>
+  </div>
+  <div class="table-card">
+    <div class="table-header">
+      <h3>⚽ Senarai Sekolah — Kokurikulum</h3>
+      <div class="search-box"><span>🔍</span><input type="text" id="koko-search" placeholder="Cari sekolah..." oninput="filterTbl('koko')"></div>
+      <select class="filter-select" id="koko-ppd-f" onchange="filterTbl('koko')"><option value="">Semua PPD</option></select>
+      <select class="filter-select" id="koko-tahap-f" onchange="filterTbl('koko')">
+        <option value="">Semua Tahap</option>
+        <option>Tahap Cemerlang</option><option>Tahap Kepujian</option><option>Tahap Baik</option>
+      </select>
+      <button class="btn btn-teal" onclick="exportTbl('koko')">📥 Eksport</button>
+    </div>
+    <div class="table-wrap">
+      <table><thead><tr>
+        <th onclick="sortTbl('koko','rank')">No</th>
+        <th onclick="sortTbl('koko','sekolah')">Nama Sekolah</th>
+        <th onclick="sortTbl('koko','ppd')">PPD</th>
+        <th onclick="sortTbl('koko','skor')">Skor (%)</th>
+        <th onclick="sortTbl('koko','tahap')">Tahap</th>
+        <th onclick="sortTbl('koko','bilangan')">Bil. Aktiviti</th>
+      </tr></thead>
+      <tbody id="tb-koko"></tbody></table>
+    </div>
+    <div class="table-footer"><span id="koko-cnt"></span><div class="pagination" id="koko-pag"></div></div>
+  </div>
+</div>
+
+<!-- ============ INSIGHT PAGE ============ -->
+<div class="page" id="page-insight">
+  <div class="sec-header"><span class="chip gold">AI INSIGHT</span><h2>Insight &amp; Cadangan Strategik</h2></div>
+  <div class="charts-grid three">
+    <div class="corr-box">
+      <div style="font-size:11px;opacity:.6;margin-bottom:7px;letter-spacing:1px;">KORELASI PdP ↔ KOKURIKULUM</div>
+      <div class="cv">r = 0.473</div>
+      <div class="cl">Korelasi Positif Sederhana</div>
+      <div class="cd">Sekolah cemerlang PdP cenderung lebih aktif kokurikulum</div>
+    </div>
+    <div class="chart-card" style="grid-column:span 2;">
+      <h3>Perbandingan 3 Domain Merentasi PPD</h3>
+      <div class="chart-sub">PK vs PdP Guru vs Kokurikulum</div>
+      <canvas id="ins-compare"></canvas>
+    </div>
+  </div>
+  <div class="insight-grid">
+    <div class="insight-card"><div class="ii">🏆</div><h4>Sekolah Model Rujukan</h4><p>28 sekolah mencapai 100% dalam PK. SK JITRA, SK SUNGAI PETANI dan SK TELOI KANAN wajar dijadikan pusat rujukan amalan terbaik untuk PPD BALING dan SIK.</p></div>
+    <div class="insight-card red"><div class="ii">🚨</div><h4>Zon Intervensi Segera</h4><p>SK BANDAR LAGUNA MERBOK (57.33%), SJK(C) CHUNG HWA (60.0%) dan SMK SERI BADONG (64.0%) memerlukan program intervensi segera oleh JPN Kedah.</p></div>
+    <div class="insight-card blue"><div class="ii">👨‍🏫</div><h4>Kekuatan PdP Guru</h4><p>71.5% guru dinilai Cemerlang dalam PdP mencerminkan kualiti pengajaran yang tinggi. Fokus pembangunan untuk 28.5% yang belum cemerlang perlu diperkukuh.</p></div>
+    <div class="insight-card gold"><div class="ii">⚽</div><h4>Kokurikulum Menonjol</h4><p>77.7% aktiviti kokurikulum di Tahap Cemerlang. KUALA MUDA memimpin dengan 86.47%. Korelasi r=0.473 mengesahkan kepentingan pendekatan holistik.</p></div>
+    <div class="insight-card purple"><div class="ii">📍</div><h4>Anomali Geografi — Langkawi</h4><p>LANGKAWI tertinggi dalam PK (89.10%) tetapi terendah dalam PdP (84.80%), mencadangkan cabaran pengajaran unik di kawasan pelancongan.</p></div>
+    <div class="insight-card"><div class="ii">🔗</div><h4>Cadangan e-Mentoring</h4><p>Wujudkan sistem e-Mentoring antara PPD terbaik dan terbawah. LANGKAWI ↔ PENDANG, KUALA MUDA ↔ SIK. Jadualkan share session amalan terbaik secara bulanan.</p></div>
+  </div>
+  <div class="table-card">
+    <div class="table-header"><h3>📋 Pelan Cadangan Intervensi Strategik</h3></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Kod</th><th>Strategi</th><th>Sasaran</th><th>Domain</th><th>Keutamaan</th></tr></thead>
+      <tbody>
+        <tr><td><strong>ST-1</strong></td><td>Program SIAP — Sekolah Intervensi Aman Prestasi</td><td>30 sekolah prestasi rendah</td><td><span class="badge badge-cemerlang">PK</span></td><td><span class="badge badge-min">Tinggi</span></td></tr>
+        <tr><td><strong>ST-2</strong></td><td>Bengkel Kepimpinan Instruksional Pengetua/GB</td><td>Pengetua skor &lt;75%</td><td><span class="badge badge-cemerlang">PK</span></td><td><span class="badge badge-min">Tinggi</span></td></tr>
+        <tr><td><strong>ST-3</strong></td><td>Modul Latihan PdP Abad ke-21</td><td>Guru skor &lt;80%</td><td><span class="badge badge-baik">PdP</span></td><td><span class="badge badge-sederhana">Sederhana</span></td></tr>
+        <tr><td><strong>ST-4</strong></td><td>Komuniti Pembelajaran Profesional (PLC)</td><td>Semua sekolah</td><td><span class="badge badge-baik">PdP</span></td><td><span class="badge badge-sederhana">Sederhana</span></td></tr>
+        <tr><td><strong>ST-5</strong></td><td>Program e-Mentoring PPD Terbaik → Terbawah</td><td>PPD PENDANG, SIK</td><td><span class="badge badge-kepujian">PK+PdP</span></td><td><span class="badge badge-cemerlang">Rendah</span></td></tr>
+        <tr><td><strong>ST-6</strong></td><td>Pertandingan Kokurikulum Peringkat PPD</td><td>Sekolah koko terendah</td><td><span class="badge badge-kepujian">Koko</span></td><td><span class="badge badge-cemerlang">Rendah</span></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ============ MODAL ============ -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOuter(event)">
+  <div class="modal" id="modal-box">
+    <div class="modal-head">
+      <div class="modal-head-info">
+        <h2 id="modal-title">Maklumat Sekolah</h2>
+        <div class="mh-sub" id="modal-sub"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+<script>
+// ===== STATE =====
+let DS = null;
+const CI = {}; // Chart instances
+const COLS = ['#1A3A6B','#2563EB','#0D9488','#F59E0B','#7C3AED','#DC2626','#16A34A','#F97316','#0EA5E9','#EC4899'];
+const T = {
+  pk:   {data:[],filtered:[],page:1,pp:20,sc:'rank',sd:1},
+  pdp:  {data:[],filtered:[],page:1,pp:20,sc:'rank',sd:1},
+  koko: {data:[],filtered:[],page:1,pp:20,sc:'rank',sd:1},
+};
+
+// ===== CHART HELPER =====
+function mkChart(id, config) {
+  if (CI[id]) CI[id].destroy();
+  const c = document.getElementById(id);
+  if (!c) return;
+  CI[id] = new Chart(c, config);
+}
+const baseFont = {family:'DM Sans', size:11};
+const axOpts = (min) => ({
+  y:{min, grid:{color:'#E2E8F0'}, ticks:{font:baseFont, color:'#64748B'}},
+  x:{grid:{display:false}, ticks:{font:{...baseFont, size:10}, color:'#64748B', maxRotation:30}}
+});
+
+// ===== KPI =====
+function kpiHtml(val, label, icon, bg, sub) {
+  return `<div class="kpi-card">
+    <div class="kpi-icon" style="background:${bg}22;">${icon}</div>
+    <div class="kpi-val">${val}</div>
+    <div class="kpi-label">${label}</div>
+    ${sub ? `<div class="kpi-sub">${sub}</div>` : ''}
+    <div class="kpi-bar" style="background:${bg};"></div>
+  </div>`;
+}
+
+// ===== BADGE / RANK =====
+function badge(t) {
+  if (!t) return '';
+  const l = t.toLowerCase();
+  if (l.includes('cemerlang')) return `<span class="badge badge-cemerlang">${t}</span>`;
+  if (l.includes('kepujian'))  return `<span class="badge badge-kepujian">${t}</span>`;
+  if (l.includes('baik'))      return `<span class="badge badge-baik">${t}</span>`;
+  if (l.includes('sederhana')) return `<span class="badge badge-sederhana">${t}</span>`;
+  return `<span class="badge badge-min">${t}</span>`;
+}
+function rankBadge(r) {
+  const c = r===1?'r1':r===2?'r2':r===3?'r3':'ro';
+  return `<span class="rank-num ${c}">${r}</span>`;
+}
+function sbar(v, color='#0D9488') {
+  const p = Math.min(100,(v/100)*100).toFixed(0);
+  return `<div class="sbar"><span style="font-weight:600;min-width:42px">${(+v).toFixed(1)}%</span><div class="sbar-bg"><div class="sbar-fill" style="width:${p}%;background:${color}"></div></div></div>`;
+}
+
+// ===== SCHOOL LINK =====
+function schoolLink(name, domain) {
+  const esc = name.replace(/'/g, "\\'");
+  return `<span class="school-link" onclick="openModal('${esc}','${domain}')">${name}</span>`;
+}
+
+// ===== INIT =====
+function init() {
+  T.pk.data   = DS.pk.sekolah   || [];
+  T.pdp.data  = DS.pdp.sekolah  || [];
+  T.koko.data = DS.koko.sekolah || [];
+  ['pk','pdp','koko'].forEach(id => { T[id].filtered = [...T[id].data]; });
+
+  // Populate PPD filters
+  const ppds = DS.metadata.ppd_list || [];
+  [['pk','pk-ppd-f'],['pdp','pdp-ppd-f'],['koko','koko-ppd-f']].forEach(([,fid]) => {
+    const el = document.getElementById(fid);
+    if (el) ppds.forEach(p => { const o = document.createElement('option'); o.value=p; o.textContent=p; el.appendChild(o); });
+  });
+
+  renderDashboard();
+  renderPK();
+  renderPdP();
+  renderKoko();
+  renderInsight();
+  renderTbl('pk'); renderTbl('pdp'); renderTbl('koko');
+}
+
+// ===== DASHBOARD =====
+function renderDashboard() {
+  document.getElementById('kpi-main').innerHTML = [
+    kpiHtml(DS.metadata.total_rekod_pk.toLocaleString(), 'Rekod Pengurusan', '🏫', '#1A3A6B', `${DS.metadata.total_sekolah_pk} sekolah`),
+    kpiHtml(DS.metadata.total_rekod_pdp.toLocaleString(), 'Cerapan PdP', '👨‍🏫', '#2563EB', `${DS.metadata.total_sekolah_pdp} sekolah`),
+    kpiHtml(DS.metadata.total_rekod_koko.toLocaleString(), 'Rekod Kokurikulum', '⚽', '#7C3AED', `${DS.metadata.total_sekolah_koko} sekolah`),
+    kpiHtml(DS.pk.stats.purata+'%', 'Purata Skor PK', '📊', '#0D9488', `Median: ${DS.pk.stats.median}%`),
+    kpiHtml(DS.pdp.stats.purata_murid+'%', 'Purata PdP Murid', '🧑‍🎓', '#F59E0B', `Guru: ${DS.pdp.stats.purata_guru}%`),
+    kpiHtml(DS.koko.stats.purata+'%', 'Purata Kokurikulum', '🏅', '#7C3AED', `Min: ${DS.koko.stats.min}%`),
+  ].join('');
+
+  // PK tahap doughnut
+  mkChart('d-pk-tahap', { type:'doughnut',
+    data:{ labels:Object.keys(DS.pk.tahap), datasets:[{data:Object.values(DS.pk.tahap), backgroundColor:['#0D9488','#2563EB','#F59E0B','#DC2626'], borderWidth:2, borderColor:'#fff'}]},
+    options:{responsive:true,maintainAspectRatio:true,cutout:'62%',plugins:{legend:{position:'bottom',labels:{font:baseFont,padding:12}}}}
+  });
+
+  // PK PPD bar
+  const pkPPD = DS.pk.ppd;
+  mkChart('d-pk-ppd', { type:'bar',
+    data:{labels:Object.keys(pkPPD), datasets:[{data:Object.values(pkPPD), backgroundColor:COLS, borderRadius:5, borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:true, plugins:{legend:{display:false}}, scales:axOpts(84)}
+  });
+
+  // PdP Guru vs Murid taburan
+  const g=DS.pdp.tahap_guru, m=DS.pdp.tahap_murid;
+  const tg=Object.values(g).reduce((a,b)=>a+b,0), tm=Object.values(m).reduce((a,b)=>a+b,0);
+  mkChart('d-pdp-compare', { type:'bar',
+    data:{labels:['Cemerlang','Baik','Sederhana','Minimum'],
+      datasets:[
+        {label:'Guru', data:[+(g['Tahap Cemerlang']||0)/tg*100, +(g['Tahap baik']||0)/tg*100, +(g['Tahap sederhana']||0)/tg*100, +(g['Tahap minimum']||0)/tg*100].map(x=>+x.toFixed(1)), backgroundColor:'#2563EB', borderRadius:4},
+        {label:'Murid', data:[+(m['Tahap Cemerlang']||0)/tm*100, +(m['Tahap Baik']||0)/tm*100, +(m['Tahap Sederhana']||0)/tm*100, +(m['Tahap Minimum']||0)/tm*100].map(x=>+x.toFixed(1)), backgroundColor:'#0D9488', borderRadius:4}
+      ]},
+    options:{responsive:true,maintainAspectRatio:true, plugins:{legend:{labels:{font:baseFont}}}, scales:axOpts(0)}
+  });
+
+  // PdP PPD Guru+Murid
+  const pg=DS.pdp.ppd_guru, pm=DS.pdp.ppd_murid;
+  const ppdKeys = Object.keys(pg);
+  mkChart('d-pdp-ppd', { type:'bar',
+    data:{labels:ppdKeys, datasets:[
+      {label:'Guru', data:ppdKeys.map(k=>pg[k]), backgroundColor:'#2563EB', borderRadius:4},
+      {label:'Murid', data:ppdKeys.map(k=>pm[k]||0), backgroundColor:'#0D9488', borderRadius:4}
+    ]},
+    options:{responsive:true,maintainAspectRatio:true, plugins:{legend:{labels:{font:baseFont}}}, scales:axOpts(82)}
+  });
+
+  // Koko tahap doughnut
+  mkChart('d-koko-tahap', { type:'doughnut',
+    data:{labels:Object.keys(DS.koko.tahap), datasets:[{data:Object.values(DS.koko.tahap), backgroundColor:['#0D9488','#2563EB','#F59E0B'], borderWidth:2, borderColor:'#fff'}]},
+    options:{responsive:true,maintainAspectRatio:true, cutout:'62%', plugins:{legend:{position:'bottom',labels:{font:baseFont,padding:12}}}}
+  });
+
+  // Koko PPD bar
+  const kPPD = DS.koko.ppd;
+  mkChart('d-koko-ppd', { type:'bar',
+    data:{labels:Object.keys(kPPD), datasets:[{data:Object.values(kPPD), backgroundColor:'#7C3AED', borderRadius:5}]},
+    options:{responsive:true,maintainAspectRatio:true, plugins:{legend:{display:false}}, scales:axOpts(82)}
+  });
+}
+
+// ===== PK PAGE =====
+function renderPK() {
+  document.getElementById('kpi-pk').innerHTML = [
+    kpiHtml(DS.metadata.total_rekod_pk.toLocaleString(),'Jumlah Rekod','📋','#1A3A6B',`${DS.metadata.total_sekolah_pk} sekolah`),
+    kpiHtml(DS.pk.stats.purata+'%','Purata Skor','📊','#0D9488',`Median: ${DS.pk.stats.median}%`),
+    kpiHtml(DS.pk.stats.max+'%','Skor Maksimum','🏆','#16A34A'),
+    kpiHtml(DS.pk.stats.min+'%','Skor Minimum','⚠️','#DC2626'),
+    kpiHtml(DS.pk.tahap['Tahap Cemerlang']||0,'Tahap Cemerlang','⭐','#0D9488'),
+    kpiHtml(DS.pk.tahap['Tahap Baik']||0,'Tahap Baik','✅','#2563EB'),
+  ].join('');
+
+  mkChart('pk-tahap', { type:'bar',
+    data:{labels:Object.keys(DS.pk.tahap), datasets:[{data:Object.values(DS.pk.tahap), backgroundColor:['#0D9488','#2563EB','#F59E0B','#DC2626'], borderRadius:5}]},
+    options:{responsive:true,maintainAspectRatio:true, plugins:{legend:{display:false}}, scales:axOpts(0)}
+  });
+
+  mkChart('pk-ppd', { type:'bar',
+    data:{labels:Object.keys(DS.pk.ppd), datasets:[{data:Object.values(DS.pk.ppd), backgroundColor:COLS, borderRadius:5, borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:true, plugins:{legend:{display:false}}, scales:axOpts(84)}
+  });
+}
+
+// ===== PdP PAGE =====
+function renderPdP() {
+  document.getElementById('kpi-pdp').innerHTML = [
+    kpiHtml(DS.metadata.total_rekod_pdp.toLocaleString(),'Jumlah Cerapan','📋','#1A3A6B',`${DS.metadata.total_sekolah_pdp} sekolah`),
+    kpiHtml(DS.pdp.stats.purata_guru+'%','Purata Guru','👨‍🏫','#2563EB'),
+    kpiHtml(DS.pdp.stats.purata_murid+'%','Purata Murid','🧑‍🎓','#0D9488'),
+    kpiHtml(DS.pdp.stats.max_guru+'%','Skor Max Guru','🏆','#16A34A'),
+    kpiHtml(DS.pdp.tahap_guru['Tahap Cemerlang']||0,'Guru Cemerlang','⭐','#2563EB'),
+    kpiHtml(DS.pdp.tahap_murid['Tahap Cemerlang']||0,'Murid Cemerlang','⭐','#0D9488'),
+  ].join('');
+
+  // Top 15 by murid
+  const top15 = (DS.pdp.sekolah||[]).slice(0,15);
+  mkChart('pdp-top-murid', { type:'bar',
+    data:{labels:top15.map(s=>s.sekolah.replace(/^[A-Z0-9]+ /,'').substring(0,30)),
+      datasets:[{data:top15.map(s=>s.skor_murid), backgroundColor:'#0D9488', borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:true, indexAxis:'y', plugins:{legend:{display:false}},
+      scales:{x:{min:85,grid:{color:'#E2E8F0'},ticks:{font:baseFont}}, y:{grid:{display:false},ticks:{font:{family:'DM Sans',size:10}}}}}
+  });
+
+  // PPD Guru chart
+  mkChart('pdp-ppd-guru', { type:'bar',
+    data:{labels:Object.keys(DS.pdp.ppd_guru), datasets:[{data:Object.values(DS.pdp.ppd_guru), backgroundColor:COLS, borderRadius:5}]},
+    options:{responsive:true,maintainAspectRatio:true, plugins:{legend:{display:false}}, scales:axOpts(84)}
+  });
+
+  // PPD Murid chart
+  mkChart('pdp-ppd-murid', { type:'bar',
+    data:{labels:Object.keys(DS.pdp.ppd_murid), datasets:[{data:Object.values(DS.pdp.ppd_murid), backgroundColor:'#0D9488', borderRadius:5}]},
+    options:{responsive:true,maintainAspectRatio:true, plugins:{legend:{display:false}}, scales:axOpts(82)}
+  });
+
+  // Guru vs Murid taburan
+  const g=DS.pdp.tahap_guru, m=DS.pdp.tahap_murid;
+  const tg=Object.values(g).reduce((a,b)=>a+b,0), tm=Object.values(m).reduce((a,b)=>a+b,0);
+  mkChart('pdp-guru-murid', { type:'bar',
+    data:{labels:['Cemerlang','Baik','Sederhana','Minimum'],
+      datasets:[
+        {label:'Guru', data:[+((g['Tahap Cemerlang']||0)/tg*100).toFixed(1), +((g['Tahap baik']||0)/tg*100).toFixed(1), +((g['Tahap sederhana']||0)/tg*100).toFixed(1), +((g['Tahap minimum']||0)/tg*100).toFixed(1)], backgroundColor:'#2563EB', borderRadius:4},
+        {label:'Murid', data:[+((m['Tahap Cemerlang']||0)/tm*100).toFixed(1), +((m['Tahap Baik']||0)/tm*100).toFixed(1), +((m['Tahap Sederhana']||0)/tm*100).toFixed(1), +((m['Tahap Minimum']||0)/tm*100).toFixed(1)], backgroundColor:'#0D9488', borderRadius:4}
+      ]},
+    options:{responsive:true,maintainAspectRatio:true, plugins:{legend:{labels:{font:baseFont}}}, scales:axOpts(0)}
+  });
+
+  // PPD stat bars murid
+  const pm=DS.pdp.ppd_murid, pmKeys=Object.keys(pm), pmVals=Object.values(pm);
+  const pmMax = Math.max(...pmVals);
+  document.getElementById('pdp-ppd-stat').innerHTML = pmKeys.map((k,i)=>`
+    <div class="srow"><div class="srow-label">${k}</div>
+    <div class="srow-bar-wrap"><div class="srow-bar-bg"><div class="srow-bar-fill" style="width:${(pmVals[i]/pmMax*100).toFixed(0)}%;background:${COLS[i]||'#2563EB'}"></div></div></div>
+    <div class="srow-val">${pmVals[i]}%</div></div>`).join('');
+}
+
+// ===== KOKO PAGE =====
+function renderKoko() {
+  document.getElementById('kpi-koko').innerHTML = [
+    kpiHtml(DS.metadata.total_rekod_koko.toLocaleString(),'Jumlah Rekod','📋','#7C3AED',`${DS.metadata.total_sekolah_koko} sekolah`),
+    kpiHtml(DS.koko.stats.purata+'%','Purata Skor','📊','#0D9488'),
+    kpiHtml(DS.koko.stats.median+'%','Median Skor','📈','#2563EB'),
+    kpiHtml(DS.koko.stats.max+'%','Skor Maksimum','🏆','#16A34A'),
+    kpiHtml(DS.koko.tahap['Tahap Cemerlang']||0,'Tahap Cemerlang','⭐','#0D9488'),
+    kpiHtml(DS.koko.tahap['Tahap Kepujian']||0,'Tahap Kepujian','🎖️','#7C3AED'),
+  ].join('');
+
+  mkChart('koko-tahap', { type:'doughnut',
+    data:{labels:Object.keys(DS.koko.tahap), datasets:[{data:Object.values(DS.koko.tahap), backgroundColor:['#0D9488','#2563EB','#F59E0B'], borderWidth:2, borderColor:'#fff'}]},
+    options:{responsive:true,maintainAspectRatio:true, cutout:'60%', plugins:{legend:{position:'bottom',labels:{font:baseFont,padding:14}}}}
+  });
+
+  mkChart('koko-ppd', { type:'bar',
+    data:{labels:Object.keys(DS.koko.ppd), datasets:[{data:Object.values(DS.koko.ppd), backgroundColor:'#7C3AED', borderRadius:5}]},
+    options:{responsive:true,maintainAspectRatio:true, indexAxis:'y', plugins:{legend:{display:false}},
+      scales:{x:{min:82,grid:{color:'#E2E8F0'},ticks:{font:baseFont}}, y:{grid:{display:false},ticks:{font:{...baseFont,size:10}}}}}
+  });
+}
+
+// ===== INSIGHT PAGE =====
+function renderInsight() {
+  const pk=DS.pk.ppd, pg=DS.pdp.ppd_guru, kk=DS.koko.ppd;
+  const ppdList = Object.keys(pk);
+  mkChart('ins-compare', { type:'line',
+    data:{labels:ppdList, datasets:[
+      {label:'PK', data:ppdList.map(p=>pk[p]||null), borderColor:'#0D9488', tension:.3, fill:false, pointRadius:4},
+      {label:'PdP Guru', data:ppdList.map(p=>pg[p]||null), borderColor:'#2563EB', tension:.3, fill:false, pointRadius:4},
+      {label:'Kokurikulum', data:ppdList.map(p=>kk[p]||null), borderColor:'#7C3AED', tension:.3, fill:false, pointRadius:4},
+    ]},
+    options:{responsive:true,maintainAspectRatio:true, plugins:{legend:{labels:{font:baseFont}}},
+      scales:{y:{min:83,max:91,grid:{color:'#E2E8F0'},ticks:{font:baseFont}}, x:{grid:{display:false},ticks:{font:{...baseFont,size:10},maxRotation:30}}}}
+  });
+}
+
+// ===== TABLE RENDER =====
+function renderTbl(id) {
+  const t = T[id];
+  const start=(t.page-1)*t.pp;
+  const paged=t.filtered.slice(start, start+t.pp);
+  let html='';
+
+  if (id==='pk') {
+    paged.forEach(r => {
+      html+=`<tr>
+        <td>${rankBadge(r.rank)}</td>
+        <td style="max-width:300px">${schoolLink(r.sekolah,'pk')}</td>
+        <td>${r.ppd}</td>
+        <td>${sbar(r.skor)}</td>
+        <td>${badge(r.tahap)}</td>
+      </tr>`;
+    });
+  } else if (id==='pdp') {
+    paged.forEach(r => {
+      html+=`<tr>
+        <td>${rankBadge(r.rank)}</td>
+        <td style="max-width:300px">${schoolLink(r.sekolah,'pdp')}</td>
+        <td>${r.ppd}</td>
+        <td>${sbar(r.skor_murid,'#0D9488')}</td>
+        <td>${sbar(r.skor_guru,'#2563EB')}</td>
+        <td style="text-align:center">${r.bilangan}</td>
+      </tr>`;
+    });
+  } else if (id==='koko') {
+    paged.forEach(r => {
+      html+=`<tr>
+        <td>${rankBadge(r.rank)}</td>
+        <td style="max-width:300px">${schoolLink(r.sekolah,'koko')}</td>
+        <td>${r.ppd}</td>
+        <td>${sbar(r.skor,'#7C3AED')}</td>
+        <td>${badge(r.tahap)}</td>
+        <td style="text-align:center">${r.bilangan}</td>
+      </tr>`;
+    });
+  }
+
+  const tb = document.getElementById(`tb-${id}`);
+  if (tb) tb.innerHTML = html || '<tr><td colspan="7" style="text-align:center;padding:24px;color:#64748B">Tiada rekod ditemui</td></tr>';
+  const cnt = document.getElementById(`${id}-cnt`);
+  if (cnt) cnt.textContent = `Menunjukkan ${start+1}–${Math.min(start+t.pp,t.filtered.length)} daripada ${t.filtered.length} rekod`;
+  renderPag(id);
+}
+
+function renderPag(id) {
+  const t=T[id], total=Math.ceil(t.filtered.length/t.pp);
+  const el=document.getElementById(`${id}-pag`);
+  if (!el) return;
+  let h='';
+  if (t.page>1) h+=`<button class="page-btn" onclick="chgPage('${id}',${t.page-1})">‹</button>`;
+  const s=Math.max(1,t.page-2), e=Math.min(total,t.page+2);
+  for (let i=s;i<=e;i++) h+=`<button class="page-btn ${i===t.page?'active':''}" onclick="chgPage('${id}',${i})">${i}</button>`;
+  if (t.page<total) h+=`<button class="page-btn" onclick="chgPage('${id}',${t.page+1})">›</button>`;
+  el.innerHTML=h;
+}
+
+function chgPage(id,p){T[id].page=p;renderTbl(id);}
+
+// ===== FILTER =====
+function filterTbl(id) {
+  const t=T[id];
+  let data=[...t.data];
+  const search=(document.getElementById(`${id}-search`)?.value||'').toLowerCase();
+  const ppd=document.getElementById(`${id}-ppd-f`)?.value||'';
+  const tahap=document.getElementById(`${id}-tahap-f`)?.value||'';
+  if (search) data=data.filter(r=>(r.sekolah||'').toLowerCase().includes(search));
+  if (ppd) data=data.filter(r=>r.ppd===ppd);
+  if (tahap) data=data.filter(r=>(r.tahap||'')===tahap);
+  t.filtered=data; t.page=1; renderTbl(id);
+}
+
+// ===== SORT =====
+function sortTbl(id,col) {
+  const t=T[id];
+  if (t.sc===col) t.sd*=-1; else {t.sc=col;t.sd=1;}
+  t.filtered.sort((a,b)=>{
+    const va=a[col]??'', vb=b[col]??'';
+    return (typeof va==='number'?(va-vb):String(va).localeCompare(String(vb)))*t.sd;
+  });
+  t.page=1; renderTbl(id);
+}
+
+// ===== EXPORT =====
+function exportTbl(id) {
+  const t=T[id];
+  let rows=[];
+  if (id==='pk') rows=t.filtered.map(r=>({'Ranking':r.rank,'Nama Sekolah':r.sekolah,'PPD':r.ppd,'Skor (%)':r.skor,'Tahap':r.tahap}));
+  else if (id==='pdp') rows=t.filtered.map(r=>({'Ranking':r.rank,'Nama Sekolah':r.sekolah,'PPD':r.ppd,'Skor Murid (%)':r.skor_murid,'Skor Guru (%)':r.skor_guru,'Bil. Cerapan':r.bilangan}));
+  else if (id==='koko') rows=t.filtered.map(r=>({'Ranking':r.rank,'Nama Sekolah':r.sekolah,'PPD':r.ppd,'Skor (%)':r.skor,'Tahap':r.tahap,'Bilangan':r.bilangan}));
+  const ws=XLSX.utils.json_to_sheet(rows);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Data');
+  XLSX.writeFile(wb,`ISPPK_${id.toUpperCase()}_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+function exportAllExcel() {
+  const wb=XLSX.utils.book_new();
+  const add=(data,name)=>{if(data.length){const ws=XLSX.utils.json_to_sheet(data);XLSX.utils.book_append_sheet(wb,ws,name);}};
+  add(T.pk.data.map(r=>({'Ranking':r.rank,'Nama Sekolah':r.sekolah,'PPD':r.ppd,'Skor (%)':r.skor,'Tahap':r.tahap})),'PK Sekolah');
+  add(T.pdp.data.map(r=>({'Ranking':r.rank,'Nama Sekolah':r.sekolah,'PPD':r.ppd,'Skor Murid (%)':r.skor_murid,'Skor Guru (%)':r.skor_guru,'Bil. Cerapan':r.bilangan})),'PdP Sekolah');
+  add(T.koko.data.map(r=>({'Ranking':r.rank,'Nama Sekolah':r.sekolah,'PPD':r.ppd,'Skor (%)':r.skor,'Tahap':r.tahap,'Bilangan':r.bilangan})),'Kokurikulum');
+  XLSX.writeFile(wb,`ISPPK_Kedah_Lengkap_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+// ===== MODAL =====
+function openModal(sekolah, domain) {
+  const recs = DS[domain].detail[sekolah] || [];
+  const ov = document.getElementById('modal-overlay');
+  const title = document.getElementById('modal-title');
+  const sub = document.getElementById('modal-sub');
+  const body = document.getElementById('modal-body');
+
+  title.textContent = sekolah;
+  sub.textContent = `${recs.length > 0 ? recs[0].ppd : ''} • ${domain==='pk'?'Pengurusan & Kepimpinan':domain==='pdp'?'PdP Guru & Murid':'Kokurikulum'} • ${recs.length} rekod`;
+
+  if (domain === 'pk') body.innerHTML = renderModalPK(recs, sekolah);
+  else if (domain === 'pdp') body.innerHTML = renderModalPdP(recs, sekolah);
+  else if (domain === 'koko') body.innerHTML = renderModalKoko(recs, sekolah);
+
+  ov.classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+function closeModalOuter(e) { if(e.target===document.getElementById('modal-overlay')) closeModal(); }
+
+// ===== MODAL PK =====
+function renderModalPK(recs, sekolah) {
+  if (!recs || recs.length === 0) return '<p style="color:#64748B;text-align:center;padding:20px">Tiada data ditemui.</p>';
+  const r = recs[0]; // Satu rekod per sekolah biasanya
+  const avgSkor = recs.length > 1 ? (recs.reduce((a,x)=>a+x.skor,0)/recs.length).toFixed(2) : r.skor;
+
+  let html = `
+    <div class="info-grid">
+      <div class="info-item highlight" style="grid-column:1/-1;display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+        <div>
+          <div class="ii-label">Peratus Pencapaian</div>
+          <div class="ii-val">${avgSkor}%</div>
+        </div>
+        <div style="flex:1;">
+          <div class="ii-label" style="color:rgba(255,255,255,.7)">Tahap Pencapaian</div>
+          <div style="font-size:16px;font-weight:700;color:white;margin-top:2px;">${r.tahap}</div>
+        </div>
+      </div>
+      <div class="info-item"><div class="ii-label">Tarikh</div><div class="ii-val">${r.tarikh||'—'}</div></div>
+      <div class="info-item"><div class="ii-label">PPD</div><div class="ii-val">${r.ppd||'—'}</div></div>
+      <div class="info-item full"><div class="ii-label">Kod dan Nama Sekolah</div><div class="ii-val">${sekolah}</div></div>
+      <div class="info-item"><div class="ii-label">Negeri</div><div class="ii-val">${r.negeri||'—'}</div></div>
+      <div class="info-item"><div class="ii-label">Nama Pentadbir</div><div class="ii-val">${r.nama||'—'}</div></div>
+      <div class="info-item"><div class="ii-label">Jantina</div><div class="ii-val">${r.jantina||'—'}</div></div>
+      <div class="info-item"><div class="ii-label">Opsyen</div><div class="ii-val">${r.opsyen||'—'}</div></div>
+      <div class="info-item"><div class="ii-label">Tempoh Perkhidmatan</div><div class="ii-val">${r.tempoh||'—'}</div></div>
+      <div class="info-item"><div class="ii-label">Jawatan Dalam Perkhidmatan</div><div class="ii-val">${r.jawatan||'—'}</div></div>
+      <div class="info-item full"><div class="ii-label">Pengalaman Sebagai Pentadbir</div><div class="ii-val">${r.pengalaman||'—'}</div></div>
+    </div>`;
+
+  // Doc URL button
+  if (r.doc_url) {
+    html += `<div style="padding:14px 0 6px;">
+      <div style="font-size:11px;color:#64748B;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Merged Doc URL — KEDAH BORANG SKOR ISPPK PK 2025</div>
+      <a href="${r.doc_url}" target="_blank" class="doc-btn doc-btn-teal">📄 Buka Borang Skor ISPPK</a>
+    </div>`;
+  }
+
+  // If multiple records
+  if (recs.length > 1) {
+    html += `<div style="margin-top:16px;"><div style="font-size:12px;font-weight:700;color:#1A3A6B;margin-bottom:8px;">Semua Rekod (${recs.length})</div>
+    <div class="modal-table-wrap"><table class="modal-table"><thead><tr>
+      <th>Tarikh</th><th>Nama Pentadbir</th><th>Jantina</th><th>Jawatan</th><th>Skor (%)</th><th>Tahap</th><th>Dokumen</th>
+    </tr></thead><tbody>`;
+    recs.forEach(rec => {
+      html += `<tr>
+        <td>${rec.tarikh||'—'}</td>
+        <td>${rec.nama||'—'}</td>
+        <td>${rec.jantina||'—'}</td>
+        <td>${rec.jawatan||'—'}</td>
+        <td><strong>${rec.skor}</strong></td>
+        <td>${badge(rec.tahap)}</td>
+        <td>${rec.doc_url?`<a href="${rec.doc_url}" target="_blank" class="doc-btn" style="padding:4px 10px;font-size:11px;">📄 Buka</a>`:'—'}</td>
+      </tr>`;
+    });
+    html += `</tbody></table></div></div>`;
+  }
+  return html;
+}
+
+// ===== MODAL PdP =====
+function renderModalPdP(recs, sekolah) {
+  if (!recs || recs.length === 0) return '<p style="color:#64748B;text-align:center;padding:20px">Tiada data ditemui.</p>';
+  const avgGuru = (recs.reduce((a,x)=>a+x.skor_guru,0)/recs.length).toFixed(2);
+  const avgMurid = (recs.reduce((a,x)=>a+x.skor_murid,0)/recs.length).toFixed(2);
+  const r = recs[0];
+
+  let html = `
+    <div class="info-grid">
+      <div class="info-item highlight">
+        <div class="ii-label">Purata Skor Guru</div>
+        <div class="ii-val">${avgGuru}%</div>
+      </div>
+      <div class="info-item highlight" style="background:linear-gradient(135deg,#0f766e,#0D9488);">
+        <div class="ii-label">Purata Skor Murid</div>
+        <div class="ii-val">${avgMurid}%</div>
+      </div>
+      <div class="info-item full"><div class="ii-label">Nama Sekolah</div><div class="ii-val">${sekolah}</div></div>
+      <div class="info-item"><div class="ii-label">PPD</div><div class="ii-val">${r.ppd||'—'}</div></div>
+      <div class="info-item"><div class="ii-label">Negeri</div><div class="ii-val">${r.negeri||'—'}</div></div>
+      <div class="info-item"><div class="ii-label">Jumlah Cerapan</div><div class="ii-val">${recs.length} cerapan</div></div>
+    </div>`;
+
+  // Full records table
+  html += `<div style="margin-top:4px;"><div style="font-size:12px;font-weight:700;color:#1A3A6B;margin-bottom:8px;">Semua Rekod Cerapan PdP (${recs.length})</div>
+  <div class="modal-table-wrap"><table class="modal-table"><thead><tr>
+    <th>Tarikh</th><th>Nama Guru</th><th>Jantina</th><th>Opsyen</th><th>Mata Pelajaran</th>
+    <th>Bil. Murid</th><th>Tahun</th><th>Tajuk/Topik</th>
+    <th>Skor Guru</th><th>% Guru</th><th>Tahap Guru</th>
+    <th>Skor Murid</th><th>% Murid</th><th>Tahap Murid</th><th>Dokumen</th>
+  </tr></thead><tbody>`;
+
+  recs.forEach(rec => {
+    html += `<tr>
+      <td style="white-space:nowrap">${rec.tarikh||'—'}</td>
+      <td style="min-width:150px">${rec.nama_guru||'—'}</td>
+      <td>${rec.jantina||'—'}</td>
+      <td>${rec.opsyen||'—'}</td>
+      <td>${rec.matapelajaran||'—'}</td>
+      <td>${rec.bil_murid||'—'}</td>
+      <td>${rec.tahun||'—'}</td>
+      <td style="min-width:120px">${rec.tajuk||'—'}</td>
+      <td style="text-align:center">${rec.jumlah_skor_guru}</td>
+      <td><strong>${rec.skor_guru}%</strong></td>
+      <td>${badge(rec.tahap_guru)}</td>
+      <td style="text-align:center">${rec.skor_murid_raw}</td>
+      <td><strong>${rec.skor_murid}%</strong></td>
+      <td>${badge(rec.tahap_murid)}</td>
+      <td>${rec.doc_url?`<a href="${rec.doc_url}" target="_blank" class="doc-btn doc-btn-teal" style="padding:4px 10px;font-size:10px;white-space:nowrap;">📄 Buka</a>`:'—'}</td>
+    </tr>`;
+  });
+  html += `</tbody></table></div></div>`;
+  return html;
+}
+
+// ===== MODAL KOKO =====
+function renderModalKoko(recs, sekolah) {
+  if (!recs || recs.length === 0) return '<p style="color:#64748B;text-align:center;padding:20px">Tiada data ditemui.</p>';
+  const avgSkor = (recs.reduce((a,x)=>a+x.skor,0)/recs.length).toFixed(2);
+  const r = recs[0];
+
+  let html = `
+    <div class="info-grid">
+      <div class="info-item highlight" style="background:linear-gradient(135deg,#5B21B6,#7C3AED);">
+        <div class="ii-label">Purata Skor Kokurikulum</div>
+        <div class="ii-val">${avgSkor}%</div>
+      </div>
+      <div class="info-item highlight" style="background:linear-gradient(135deg,#1E4FA8,#2563EB);">
+        <div class="ii-label">Jumlah Aktiviti</div>
+        <div class="ii-val">${recs.length}</div>
+      </div>
+      <div class="info-item full"><div class="ii-label">Nama Sekolah</div><div class="ii-val">${sekolah}</div></div>
+      <div class="info-item"><div class="ii-label">PPD</div><div class="ii-val">${r.ppd||'—'}</div></div>
+      <div class="info-item"><div class="ii-label">Negeri</div><div class="ii-val">${r.negeri||'—'}</div></div>
+    </div>`;
+
+  html += `<div style="margin-top:4px;"><div style="font-size:12px;font-weight:700;color:#1A3A6B;margin-bottom:8px;">Semua Rekod Kokurikulum (${recs.length})</div>
+  <div class="modal-table-wrap"><table class="modal-table"><thead><tr>
+    <th>Tarikh</th><th>Nama Guru</th><th>Jantina</th><th>Opsyen</th>
+    <th>Pasukan/Kelab/Persatuan</th><th>Skor (%)</th><th>Tahap</th><th>Dokumen</th>
+  </tr></thead><tbody>`;
+
+  recs.forEach(rec => {
+    html += `<tr>
+      <td style="white-space:nowrap">${rec.tarikh||'—'}</td>
+      <td style="min-width:150px">${rec.nama_guru||'—'}</td>
+      <td>${rec.jantina||'—'}</td>
+      <td>${rec.opsyen||'—'}</td>
+      <td style="min-width:180px">${rec.pasukan||'—'}</td>
+      <td><strong>${rec.skor}%</strong></td>
+      <td>${badge(rec.tahap)}</td>
+      <td>${rec.doc_url?`<a href="${rec.doc_url}" target="_blank" class="doc-btn doc-btn-teal" style="padding:4px 10px;font-size:10px;white-space:nowrap;">📄 Buka</a>`:'—'}</td>
+    </tr>`;
+  });
+  html += `</tbody></table></div></div>`;
+  return html;
+}
+
+// ===== NAVIGATION =====
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById(`page-${id}`).classList.add('active');
+  if (el) el.classList.add('active');
+  const names={dashboard:'Dashboard',pk:'Pengurusan & Kepimpinan',pdp:'PdP Guru & Murid',koko:'Kokurikulum',insight:'AI Insight'};
+  document.getElementById('bc').textContent = names[id]||id;
+}
+
+function showTab(domain, tab, el) {
+  document.querySelectorAll(`#page-${domain} .tab-btn`).forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  if (domain==='pdp') {
+    ['murid','ppd'].forEach(t=>{
+      const e=document.getElementById(`pdp-tab-${t}`);
+      if(e) e.style.display=t===tab?'':'none';
+    });
+  }
+}
+
+// ===== BOOT =====
+async function boot() {
+  const bar = document.getElementById('load-bar');
+  const msg = document.getElementById('load-msg');
+  let pct = 0;
+  const ticker = setInterval(() => { pct = Math.min(pct + 2, 80); bar.style.width = pct + '%'; }, 100);
+
+  try {
+    msg.textContent = 'Memuatkan dataset...';
+    const response = await fetch('dataset.json');
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+    msg.textContent = 'Memproses data...';
+    const raw = await response.json();
+
+    // Decompress pdp detail field names
+    if (raw.pdp_keys) {
+      const km = raw.pdp_keys;
+      const nd = {};
+      for (const [school, recs] of Object.entries(raw.pdp.detail || {})) {
+        nd[school] = recs.map(r => { const e={}; for(const[k,v] of Object.entries(r)){e[km[k]||k]=v;} return e; });
+      }
+      raw.pdp.detail = nd;
+    }
+
+    DS = raw;
+    clearInterval(ticker);
+    bar.style.width = '100%';
+    await new Promise(r => setTimeout(r, 350));
+    document.getElementById('loading-screen').style.display = 'none';
+    init();
+
+  } catch(err) {
+    clearInterval(ticker);
+    bar.style.background = '#DC2626';
+    bar.style.width = '100%';
+    msg.innerHTML = `⚠️ Gagal memuatkan dataset.json<br><span style="font-size:11px;opacity:.6">Pastikan fail dataset.json berada dalam folder yang sama dengan index.html</span><br><br><span style="font-size:10px;opacity:.4">Ralat: ${err.message}</span>`;
+  }
+}
+window.addEventListener('DOMContentLoaded', boot);
+</script>
+</body>
+</html>
